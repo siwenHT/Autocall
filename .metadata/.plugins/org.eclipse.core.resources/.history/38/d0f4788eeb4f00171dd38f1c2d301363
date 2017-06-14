@@ -1,0 +1,8 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <string name="app_name">AutoCallPhone</string>
+    <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/hello" name="hello">hello</string>
+    <string android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/inputPhoneNum" name="intPhoneNum">输入电话号码</string>
+
+
+</resources>

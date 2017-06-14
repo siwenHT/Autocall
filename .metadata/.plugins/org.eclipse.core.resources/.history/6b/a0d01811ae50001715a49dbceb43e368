@@ -1,0 +1,15 @@
+callSpaceTime<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <string name="app_name">AutoCallPhone</string>
+    <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/hello" name="hello">hello</string>
+    <string android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/inputPhoneNum" name="inputPhoneNum">输入电话号码：</string>
+    <string android:id="@+id/call" android:layout_width="wrap_content" android:layout_height="wrap_content" name="call">呼叫</string>
+    <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/begainTime" name="begainTime">设定开始时间：</string>
+    <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/spaceTime" name="spaceTime">间隔时间：</string>
+    <string android:layout_height="wrap_content" android:id="@+id/Times" android:layout_width="wrap_content" name="Times">设定次数（最好不要超过100次，不然会被服务商停止呼叫功能）：</string>
+    <string android:id="@+id/tips" android:layout_width="wrap_content" android:layout_height="wrap_content" name="tips">软件旨在提供方便，请正确使用！</string>
+    <string android:layout_height="wrap_content" android:id="@+id/stop" android:layout_width="wrap_content" name="stop">停止</string>
+    <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/callHoldTime" name="callHoldTime">呼叫持续时间（默认10秒）</string>
+
+
+</resources>
