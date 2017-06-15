@@ -1,0 +1,7 @@
+package com.siwen.autocallphone;
+
+public class Constants {
+	  public static final String APPID = "1101152570";
+	  public static final String BannerPosID1 = "9079537218417626401";
+	  public static final String BannerPosID2= "9079537218417626401";
+}

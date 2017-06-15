@@ -1,0 +1,210 @@
+package com.qq.e.union.demo;
+
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.qq.e.ads.splash.SplashAD;
+import com.qq.e.ads.splash.SplashADListener;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 杩欐槸demo宸ョ▼鐨勫叆鍙ctivity锛屽湪杩欓噷浼氶娆¤皟鐢ㄥ箍鐐归�氱殑SDK銆�
+ *
+ * 鍦ㄨ皟鐢⊿DK涔嬪墠锛屽鏋滄偍鐨凙pp鐨則argetSDKVersion >= 23锛岄偅涔堜竴瀹氳鎶�"READ_PHONE_STATE"銆�"WRITE_EXTERNAL_STORAGE"銆�"ACCESS_FINE_LOCATION"杩欏嚑涓潈闄愮敵璇峰埌锛屽惁鍒橲DK灏嗕笉浼氬伐浣溿��
+ */
+public class SplashActivity extends Activity implements SplashADListener {
+
+  private SplashAD splashAD;
+  private ViewGroup container;
+  private TextView skipView;
+  private ImageView splashHolder;
+  private static final String SKIP_TEXT = "鐐瑰嚮璺宠繃 %d";
+  
+  public boolean canJump = false;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_splash);
+    container = (ViewGroup) this.findViewById(R.id.splash_container);
+    skipView = (TextView) findViewById(R.id.skip_view);
+    splashHolder = (ImageView) findViewById(R.id.splash_holder);
+    
+    fetchSplashAD(this, container, skipView, Constants.APPID, Constants.SplashPosID, this, 0);
+    // 濡傛灉targetSDKVersion >= 23锛屽氨瑕佺敵璇峰ソ鏉冮檺銆傚鏋滄偍鐨凙pp娌℃湁閫傞厤鍒癆ndroid6.0锛堝嵆targetSDKVersion < 23锛夛紝閭ｄ箞鍙渶瑕佸湪杩欓噷鐩存帴璋冪敤fetchSplashAD鎺ュ彛銆�
+    if (Build.VERSION.SDK_INT >= 23) {
+      checkAndRequestPermission();
+    } else {
+      // 濡傛灉鏄疉ndroid6.0浠ヤ笅鐨勬満鍣紝榛樿鍦ㄥ畨瑁呮椂鑾峰緱浜嗘墍鏈夋潈闄愶紝鍙互鐩存帴璋冪敤SDK
+      fetchSplashAD(this, container, skipView, Constants.APPID, Constants.SplashPosID, this, 0);
+    }
+  }
+
+  /**
+   *
+   * ----------闈炲父閲嶈----------
+   *
+   * Android6.0浠ヤ笂鐨勬潈闄愰�傞厤绠�鍗曠ず渚嬶細
+   *
+   * 濡傛灉targetSDKVersion >= 23锛岄偅涔堝繀椤昏鐢宠鍒版墍闇�瑕佺殑鏉冮檺锛屽啀璋冪敤骞跨偣閫歋DK锛屽惁鍒欏箍鐐归�歋DK涓嶄細宸ヤ綔銆�
+   *
+   * Demo浠ｇ爜閲屾槸涓�涓熀鏈殑鏉冮檺鐢宠绀轰緥锛岃寮�鍙戣�呮牴鎹嚜宸辩殑鍦烘櫙鍚堢悊鍦扮紪鍐欒繖閮ㄥ垎浠ｇ爜鏉ュ疄鐜版潈闄愮敵璇枫��
+   * 娉ㄦ剰锛氫笅闈㈢殑`checkSelfPermission`鍜宍requestPermissions`鏂规硶閮芥槸鍦ˋndroid6.0鐨凷DK涓鍔犵殑API锛屽鏋滄偍鐨凙pp杩樻病鏈夐�傞厤鍒癆ndroid6.0浠ヤ笂锛屽垯涓嶉渶瑕佽皟鐢ㄨ繖浜涙柟娉曪紝鐩存帴璋冪敤骞跨偣閫歋DK鍗冲彲銆�
+   */
+  @TargetApi(Build.VERSION_CODES.M)
+  private void checkAndRequestPermission() {
+    List<String> lackedPermission = new ArrayList<String>();
+    if (!(checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)) {
+      lackedPermission.add(Manifest.permission.READ_PHONE_STATE);
+    }
+
+    if (!(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+      lackedPermission.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    if (!(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+      lackedPermission.add(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    // 鏉冮檺閮藉凡缁忔湁浜嗭紝閭ｄ箞鐩存帴璋冪敤SDK
+    if (lackedPermission.size() == 0) {
+      fetchSplashAD(this, container, skipView, Constants.APPID, Constants.SplashPosID, this, 0);
+    } else {
+      // 璇锋眰鎵�缂哄皯鐨勬潈闄愶紝鍦╫nRequestPermissionsResult涓啀鐪嬫槸鍚﹁幏寰楁潈闄愶紝濡傛灉鑾峰緱鏉冮檺灏卞彲浠ヨ皟鐢⊿DK锛屽惁鍒欎笉瑕佽皟鐢⊿DK銆�
+      String[] requestPermissions = new String[lackedPermission.size()];
+      lackedPermission.toArray(requestPermissions);
+      requestPermissions(requestPermissions, 1024);
+    }
+  }
+
+  private boolean hasAllPermissionsGranted(int[] grantResults) {
+    for (int grantResult : grantResults) {
+      if (grantResult == PackageManager.PERMISSION_DENIED) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode == 1024 && hasAllPermissionsGranted(grantResults)) {
+      fetchSplashAD(this, container, skipView, Constants.APPID, Constants.SplashPosID, this, 0);
+    } else {
+      // 濡傛灉鐢ㄦ埛娌℃湁鎺堟潈锛岄偅涔堝簲璇ヨ鏄庢剰鍥撅紝寮曞鐢ㄦ埛鍘昏缃噷闈㈡巿鏉冦��
+      Toast.makeText(this, "搴旂敤缂哄皯蹇呰鐨勬潈闄愶紒璇风偣鍑籠"鏉冮檺\"锛屾墦寮�鎵�闇�瑕佺殑鏉冮檺銆�", Toast.LENGTH_LONG).show();
+      Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+      intent.setData(Uri.parse("package:" + getPackageName()));
+      startActivity(intent);
+      finish();
+    }
+  }
+
+  /**
+   * 鎷夊彇寮�灞忓箍鍛婏紝寮�灞忓箍鍛婄殑鏋勯�犳柟娉曟湁3绉嶏紝璇︾粏璇存槑璇峰弬鑰冨紑鍙戣�呮枃妗ｃ��
+   *
+   * @param activity        灞曠ず骞垮憡鐨刟ctivity
+   * @param adContainer     灞曠ず骞垮憡鐨勫ぇ瀹瑰櫒
+   * @param skipContainer   鑷畾涔夌殑璺宠繃鎸夐挳锛氫紶鍏ヨview缁橲DK鍚庯紝SDK浼氳嚜鍔ㄧ粰瀹冪粦瀹氱偣鍑昏烦杩囦簨浠躲�係kipView鐨勬牱寮忓彲浠ョ敱寮�鍙戣�呰嚜鐢卞畾鍒讹紝鍏跺昂瀵搁檺鍒惰鍙傝�僡ctivity_splash.xml鎴栬�呮帴鍏ユ枃妗ｄ腑鐨勮鏄庛��
+   * @param appId           搴旂敤ID
+   * @param posId           骞垮憡浣岻D
+   * @param adListener      骞垮憡鐘舵�佺洃鍚櫒
+   * @param fetchDelay      鎷夊彇骞垮憡鐨勮秴鏃舵椂闀匡細鍙栧�艰寖鍥碵3000, 5000]锛岃涓�0琛ㄧず浣跨敤骞跨偣閫歋DK榛樿鐨勮秴鏃舵椂闀裤��
+   */
+  private void fetchSplashAD(Activity activity, ViewGroup adContainer, View skipContainer,
+      String appId, String posId, SplashADListener adListener, int fetchDelay) {
+    splashAD = new SplashAD(activity, adContainer, skipContainer, appId, posId, adListener, fetchDelay);
+  }
+
+  @Override
+  public void onADPresent() {
+    Log.i("AD_DEMO", "SplashADPresent");
+    splashHolder.setVisibility(View.INVISIBLE); // 骞垮憡灞曠ず鍚庝竴瀹氳鎶婇璁剧殑寮�灞忓浘鐗囬殣钘忚捣鏉�
+  }
+
+  @Override
+  public void onADClicked() {
+    Log.i("AD_DEMO", "SplashADClicked");
+  }
+
+  /**
+   * 鍊掕鏃跺洖璋冿紝杩斿洖骞垮憡杩樺皢琚睍绀虹殑鍓╀綑鏃堕棿銆�
+   * 閫氳繃杩欎釜鎺ュ彛锛屽紑鍙戣�呭彲浠ヨ嚜琛屽喅瀹氭槸鍚︽樉绀哄�掕鏃舵彁绀猴紝鎴栬�呰繕鍓╁嚑绉掔殑鏃跺�欐樉绀哄�掕鏃�
+   *
+   * @param millisUntilFinished 鍓╀綑姣鏁�
+   */
+  @Override
+  public void onADTick(long millisUntilFinished) {
+    Log.i("AD_DEMO", "SplashADTick " + millisUntilFinished + "ms");
+    skipView.setText(String.format(SKIP_TEXT, Math.round(millisUntilFinished / 1000f)));
+  }
+
+  @Override
+  public void onADDismissed() {
+    Log.i("AD_DEMO", "SplashADDismissed");
+    next();
+  }
+
+  @Override
+  public void onNoAD(int errorCode) {
+    Log.i("AD_DEMO", "LoadSplashADFail, eCode=" + errorCode);
+    /** 濡傛灉鍔犺浇骞垮憡澶辫触锛屽垯鐩存帴璺宠浆 */
+    this.startActivity(new Intent(this, DemoListActivity.class));
+    this.finish();
+  }
+
+  /**
+   * 璁剧疆涓�涓彉閲忔潵鎺у埗褰撳墠寮�灞忛〉闈㈡槸鍚﹀彲浠ヨ烦杞紝褰撳紑灞忓箍鍛婁负鏅摼绫诲箍鍛婃椂锛岀偣鍑讳細鎵撳紑涓�涓箍鍛婅惤鍦伴〉锛屾鏃跺紑鍙戣�呰繕涓嶈兘鎵撳紑鑷繁鐨凙pp涓婚〉銆傚綋浠庡箍鍛婅惤鍦伴〉杩斿洖浠ュ悗锛�
+   * 鎵嶅彲浠ヨ烦杞埌寮�鍙戣�呰嚜宸辩殑App涓婚〉锛涘綋寮�灞忓箍鍛婃槸App绫诲箍鍛婃椂鍙細涓嬭浇App銆�
+   */
+  private void next() {
+    if (canJump) {
+      this.startActivity(new Intent(this, DemoListActivity.class));
+      this.finish();
+    } else {
+      canJump = true;
+    }
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    canJump = false;
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    if (canJump) {
+      next();
+    }
+    canJump = true;
+  }
+
+  /** 寮�灞忛〉涓�瀹氳绂佹鐢ㄦ埛瀵硅繑鍥炴寜閽殑鎺у埗锛屽惁鍒欏皢鍙兘瀵艰嚧鐢ㄦ埛鎵嬪姩閫�鍑轰簡App鑰屽箍鍛婃棤娉曟甯告洕鍏夊拰璁¤垂 */
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME) {
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
+  }
+
+}

@@ -8,8 +8,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.android.internal.telephony.ITelephony;
+import com.qq.e.ads.banner.ADSize;
+import com.qq.e.ads.banner.AbstractBannerADListener;
+import com.qq.e.ads.banner.BannerView;
 
 import android.app.Activity;  
+import android.app.AlertDialog;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,7 +21,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
@@ -27,8 +33,10 @@ import android.widget.TimePicker;
  * 程序刚运行就显示的界面
  */
 public class phoneActivity extends Activity {
+	// 1、计算时间准备打电话. 2、拨打 3、呼叫中。 4、呼叫成功。 5、呼叫结束中. 6、呼叫结束完成。
+	
+	private int   curStep;    
 	private Timer timer1;
-	private int   curStep;  // 1、计算时间准备打电话. 2、拨打 3、呼叫中。 4、呼叫结束中. 
 	private int   callTimeCnt;
 	private Intent intent;
 	ITelephony iPhoney = null;
@@ -40,6 +48,9 @@ public class phoneActivity extends Activity {
 	private int  callSpaceTime = 5;
 	private int  callHoldTime = 10;
 	
+	ViewGroup bannerContainer;
+	BannerView bv;
+		
 	/**
 	 * 当界面刚被创建时回调此方法
 	 */
@@ -57,11 +68,29 @@ public class phoneActivity extends Activity {
 		iPhoney = getITelephony(this);
 		
 		startCount();
+		
+		
+		bannerContainer = (ViewGroup) this.findViewById(R.id.bannerContainer);
+	    this.initBanner();
+	    this.bv.loadAD();
 	}
 	
 	public void call(View v) 
 	{
+		if (runable)
+		{
+			showTips("已经在呼叫中，如需更改呼叫设定，请先停止呼叫！");
+			return;
+		} 
 		System.out.println("拨打电话.");
+		EditText etNumber1 = (EditText) findViewById(R.id.phoneNum);	// 输入框对象
+		String number = etNumber1.getText().toString();	// 将要拨打的号码转为数字
+		if ("".equals(number))
+		{
+			showTips("请输入电话号码！");
+			return ;
+		}
+		
 		runable = true;
 		
 		EditText etNumber = (EditText) findViewById(R.id.editText3); //呼叫次数
@@ -91,11 +120,19 @@ public class phoneActivity extends Activity {
 		}
 		callHoldTime = Integer.parseInt(str_data);
 		
+		TimePicker timerPicker = (TimePicker) findViewById(R.id.timePicker1);
+		timerPicker.setEnabled(false);
+		
 		System.out.println("起始数据： 次数" + callNums + ",间隔时间" + callSpaceTime + ",呼叫持续时间" + callHoldTime);
 	}
 	
 	public void stop(View v) 
 	{
+		if (!runable)
+		{
+			showTips("还未进行呼叫！", false);
+			return;
+		}
 		runable = false;
 		endCall = endCallPhone();
 		
@@ -107,6 +144,15 @@ public class phoneActivity extends Activity {
 		
 		etNumber = (EditText) findViewById(R.id.editText1); //呼叫持续时间
 		etNumber.setEnabled(true);
+		
+		TimePicker timerPicker = (TimePicker) findViewById(R.id.timePicker1);
+		timerPicker.setEnabled(true);
+		
+		Button btn = (Button) findViewById(R.id.Button01);
+		btn.setText("呼叫");
+		
+		System.out.println("停止拨打： 次数" + callNums );
+		
 	}
 	
 	public void startCallPhone()
@@ -122,6 +168,8 @@ public class phoneActivity extends Activity {
 		startActivity(intent);	// 执行这个动作
 		
 		callTimeCnt = 0;
+		callTimeCnt = 0;
+		System.out.println("拨打电话. " + number);
 	}
 	
 	public boolean endCallPhone()
@@ -132,9 +180,10 @@ public class phoneActivity extends Activity {
 			endCall = iPhoney.endCall();
 			if (endCall)
 			{
-				callNums -= 1;
-				updateUI();
-				Thread.sleep(callSpaceTime * 1000);
+				//callNums -= 1;
+				//updateUI();
+				curStep = 5;
+				//callTimeCnt = 0;
 			}
 		}
 		catch (Exception e)
@@ -155,18 +204,34 @@ public class phoneActivity extends Activity {
 		if (time > 0 )
 		{
 			Button btn = (Button) findViewById(R.id.Button01);
-			btn.setText("("+time +"分钟后)" +R.string.call);
+			btn.setText("("+time +"分钟后)" + "呼叫");
 		}
 		else
 		{
 			Button btn = (Button) findViewById(R.id.Button01);
-			btn.setText(R.string.call);
+			btn.setText("呼叫中");
 		}
+	}
+	
+	public void showTips(String str)
+	{
+		showTips(str, true);
+	}
+	
+	public void showTips(String str, boolean showBtn)
+	{
+		AlertDialog.Builder dlog = new AlertDialog.Builder(this).setTitle("提示");
+		dlog.setMessage(str);
+		if (showBtn)
+		{
+			dlog.setPositiveButton("确定", null);
+		}
+		dlog.show();
 	}
 	
 	public int checkTime()
 	{
-		TimePicker timerPicker = (TimePicker) findViewById(R.id.timePicker1);	// 输入框对象
+		TimePicker timerPicker = (TimePicker) findViewById(R.id.timePicker1);
 		int hour = timerPicker.getCurrentHour();
 		int minute = timerPicker.getCurrentMinute();
 		int timeNum = hour * 60 + minute;
@@ -197,46 +262,51 @@ public class phoneActivity extends Activity {
 							int time = checkTime();
 							if (time <= 0 )
 							{
+								if (curStep == 3)
+								{
+									callTimeCnt += 1;
+									if (callTimeCnt < callHoldTime)
+									{
+										return;
+									}
+								}
+								else if (curStep == 5)
+								{
+									callTimeCnt += 1;
+									if (callTimeCnt < callSpaceTime)
+									{
+										return;
+									}
+								}
+								
 								int state= tm.getCallState();
 								if(state == TelephonyManager.CALL_STATE_IDLE)
 								{
 									startCallPhone();
-									try 
-									{
-										Thread.sleep(2000);
-									}
-									catch (Exception e)
-								    {
-										e.printStackTrace();
-								    }
 									curStep = 3;
+									callNums -= 1;
+									updateUI();
+									callTimeCnt = 0;
 								}
-								if(curStep != 4 && state == TelephonyManager.CALL_STATE_OFFHOOK)
+								else if(state == TelephonyManager.CALL_STATE_OFFHOOK)
 								{
-									try 
+									if (curStep == 3)
 									{
-										Thread.sleep(callHoldTime * 1000 - 2000);
-										endCall = endCallPhone();
-										//System.out.println("是否成功挂断："+endCall);
-									}
-									catch (Exception e)
-								    {
-										e.printStackTrace();
 										curStep = 4;
-								    }
-								}
-								 
-								if (curStep == 4)
-								{
-									try 
+										callTimeCnt = 0;
+									}
+									else if(curStep == 4)
 									{
-										endCall = endCallPhone();
+										try 
+										{
+											endCall = endCallPhone();
+											//System.out.println("是否成功挂断：" + endCall);
+										}
+										catch (Exception e)
+									    {
+											e.printStackTrace();
+									    }
 									}
-									catch (Exception e)
-								    {
-										e.printStackTrace();
-										curStep = 4;
-								    }
 								}
 							}
 						}
@@ -286,6 +356,31 @@ public class phoneActivity extends Activity {
 			e.printStackTrace();
 		}
 		return iTelephony;
+	}
+	
+	
+	private void initBanner() 
+	{
+		this.bv = new BannerView(this, ADSize.BANNER, Constants.APPID, Constants.BannerPosID2);
+		// 注意：如果开发者的banner不是始终展示在屏幕中的话，请关闭自动刷新，否则将导致曝光率过低。
+		// 并且应该自行处理：当banner广告区域出现在屏幕后，再手动loadAD。
+		
+		bv.setRefresh(15); 
+		bv.setADListener(new AbstractBannerADListener() 
+		{
+			@Override
+			public void onNoAD(int arg0) 
+			{
+				Log.i("AD_DEMO", "BannerNoAD，eCode=" + arg0);
+			}
+
+			@Override
+			public void onADReceiv()
+			{
+				Log.i("AD_DEMO", "ONBannerReceive");
+			}
+		});
+		bannerContainer.addView(bv);
 	}
 }
 

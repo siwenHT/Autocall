@@ -2,12 +2,15 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="endCall" key="selection"/>
+		<item value="// 濡傛灉targetSDKVersion &gt;= 23锛屽氨瑕佺敵璇峰ソ鏉冮檺銆傚鏋滄偍鐨凙pp娌℃湁閫傞厤鍒癆ndroid6.0锛堝嵆targetSDKVersion &lt; 23锛夛紝閭ｄ箞鍙渶瑕佸湪杩欓噷鐩存帴璋冪敤fetchSplashAD鎺ュ彛銆�" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="// 濡傛灉targetSDKVersion &gt;= 23锛屽氨瑕佺敵璇峰ソ鏉冮檺銆傚鏋滄偍鐨凙pp娌℃湁閫傞厤鍒癆ndroid6.0锛堝嵆targetSDKVersion &lt; 23锛夛紝閭ｄ箞鍙渶瑕佸湪杩欓噷鐩存帴璋冪敤fetchSplashAD鎺ュ彛銆�"/>
+			<item value="callTimeCnt"/>
+			<item value="endCallPhone"/>
 			<item value="endCall"/>
 			<item value="callSpaceTime"/>
 			<item value="startCallPhone"/>

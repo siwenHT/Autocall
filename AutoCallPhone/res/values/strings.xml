@@ -10,6 +10,8 @@
     <string android:id="@+id/tips" android:layout_width="wrap_content" android:layout_height="wrap_content" name="tips">软件旨在提供方便，请正确使用！</string>
     <string android:layout_height="wrap_content" android:id="@+id/stop" android:layout_width="wrap_content" name="stop">停止</string>
     <string android:layout_height="wrap_content" android:layout_width="wrap_content" android:id="@+id/callHoldTime" name="callHoldTime">呼叫持续时间（默认10秒）</string>
+    <string name="gdtslog">GDTslog</string>
+    <string android:id="@+id/click_to_skip" android:layout_width="wrap_content" android:layout_height="wrap_content" name="click_to_skip"/>
 
 
 </resources>
